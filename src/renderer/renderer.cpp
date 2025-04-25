@@ -1,6 +1,8 @@
 #include "../stdafx.h"
 #include "renderer.hpp"
 
+#include <imgui_internal.h>
+
 Renderer::Renderer(Window& window)
     : m_Window(window),
       m_Context(window),

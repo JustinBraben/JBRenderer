@@ -22,6 +22,29 @@ FetchContent_Declare(
     GIT_TAG        v1.4.307 #suggest using a tag so the library doesn't update whenever new commits are pushed to a branch
 )
 FetchContent_MakeAvailable(fetch_vk_bootstrap)
+# FetchContent_Declare(ImGui
+#     GIT_REPOSITORY https://github.com/ocornut/imgui
+#     GIT_TAG v1.91.1
+#     GIT_SHALLOW ON
+#     EXCLUDE_FROM_ALL
+#     SYSTEM)
+# FetchContent_MakeAvailable(ImGui)
+# FetchContent_GetProperties(ImGui SOURCE_DIR IMGUI_DIR)
+FetchContent_Declare(imgui_external
+	URL https://github.com/ocornut/imgui/archive/refs/tags/v1.91.9.tar.gz
+	EXCLUDE_FROM_ALL
+)
+FetchContent_MakeAvailable(imgui_external)
+
+add_library(imgui
+	#${imgui_external_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+    #${imgui_external_SOURCE_DIR}/backends/imgui_impl_vulkan.cpp
+    ${imgui_external_SOURCE_DIR}/imgui.cpp
+	${imgui_external_SOURCE_DIR}/imgui_draw.cpp
+	${imgui_external_SOURCE_DIR}/imgui_tables.cpp
+	${imgui_external_SOURCE_DIR}/imgui_widgets.cpp
+)
+target_include_directories(imgui PUBLIC ${imgui_external_SOURCE_DIR})
 
 add_executable(JBRenderer 
     "src/main.cpp" 
@@ -38,10 +61,12 @@ add_executable(JBRenderer
     "src/renderer/swap_chain.cpp"
     "src/renderer/synchronization.cpp"
     "src/renderer/vulkan_context.cpp")
+
 target_link_libraries(JBRenderer
     PRIVATE
-        Vulkan::Vulkan
         glfw
+        Vulkan::Vulkan
+        imgui
         vk-bootstrap
         vk-bootstrap-compiler-warnings)
 
