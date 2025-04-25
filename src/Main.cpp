@@ -1,16 +1,5 @@
-#include <stdio.h>
-
-#include <memory>
-#include <iostream>
-#include <fstream>
-#include <string>
-
-#include <vulkan/vulkan_core.h>
-#include <GLFW/glfw3.h>
-
-#include <VkBootstrap.h>
-
-#include "example_config.h"
+#include "stdafx.h"
+#include "app.hpp"
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -605,3 +594,9 @@ int main() {
     cleanup(init, render_data);
     return 0;
 }
+
+// int main()
+// {
+//     App app;
+//     return app.Run();
+// }

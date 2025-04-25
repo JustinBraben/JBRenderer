@@ -23,7 +23,12 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(fetch_vk_bootstrap)
 
-add_executable(JBRenderer "src/main.cpp")
+add_executable(JBRenderer 
+    "src/main.cpp" 
+    "src/stdafx.cpp" 
+    "src/core/window.cpp" 
+    "src/app.cpp"
+    "src/renderer/renderer.cpp")
 target_link_libraries(JBRenderer
     PRIVATE
         Vulkan::Vulkan
@@ -40,7 +45,7 @@ if(APPLE)
     )
 endif()
 
-target_include_directories(JBRenderer PRIVATE ${CMAKE_CURRENT_BINARY_DIR}) # path to build directory for shaders
+target_include_directories(JBRenderer PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR}/src) # path to build directory for shaders
 
 find_program(GLSLANG_FOUND glslang)
 if(GLSLANG_FOUND)
