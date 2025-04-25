@@ -51,7 +51,7 @@ if(GLSLANG_FOUND)
         set(SHADER_SOURCE ${CMAKE_SOURCE_DIR}/src/shaders/${SHADER_NAME})
         set(SHADER_SPIRV_NAME ${SHADER_NAME}.spv)
         set(SHADER_SPIRV_PATH ${CMAKE_SOURCE_DIR}/src/shaders/${SHADER_SPIRV_NAME})
-        set(SHADER_DEST_SPIRV ${CMAKE_BINARY_DIR}/${SHADER_SPIRV_NAME})
+        set(SHADER_DEST_SPIRV ${CMAKE_BINARY_DIR}/shaders/${SHADER_SPIRV_NAME})
 
         add_custom_command(
             OUTPUT ${SHADER_SPIRV_PATH}
@@ -70,7 +70,6 @@ if(GLSLANG_FOUND)
 
     compile_shader(triangle.frag)
     compile_shader(triangle.vert)
-    #compile_shader(simple_compute.comp)
     add_custom_target(generate_shaders DEPENDS ${COMPILED_SHADER_FILES})
     add_dependencies(JBRenderer generate_shaders)
 else()

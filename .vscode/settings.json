@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.in": "cpp",
+        "array": "cpp",
+        "span": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "vector": "cpp"
+    }
+}
