@@ -1,61 +1,83 @@
-cmake_minimum_required(VERSION 3.14)
-project(VulkanLaunchpadStarter)
+cmake_minimum_required(VERSION 3.20...3.31)
+project(JBRenderer
+    LANGUAGES CXX
+    DESCRIPTION "A vulkan renderer"
+    VERSION 1.0.0)
 
-#================================#
-# Compiler                       #
-#================================#
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_EXTENSIONS OFF)
+# search for Vulkan SDK
+find_package(Vulkan)
 
-
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-# Update submodules as needed
-    option(GIT_SUBMODULE "Check submodules during build" ON)
-    if(GIT_SUBMODULE)
-        message(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        endif()
-    endif()
-endif()
-
-if(NOT EXISTS "${PROJECT_SOURCE_DIR}/VulkanLaunchpad/CMakeLists.txt")
-    message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-endif()
-
-
-#================================#
-# VulkanLaunchpad (dependency)   #
-#================================#
-add_subdirectory(VulkanLaunchpad)
-
-#================================#
-# VulkanLaunchpadStarter         #
-#================================#
-add_executable(${PROJECT_NAME} 
-    src/Main.cpp 
-    src/VulkanHelpers.h
-    src/VulkanHelpers.cpp 
-    src/Teapot.h 
-    src/Teapot.cpp 
+include(FetchContent)
+FetchContent_Declare (
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.4
 )
-target_link_libraries(${PROJECT_NAME} PRIVATE VulkanLaunchpad)
-add_dependencies(${PROJECT_NAME} VulkanLaunchpad)
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin LIBRARY DESTINATION lib ARCHIVE DESTINATION lib)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL  "")
+set(GLFW_INSTALL OFF CACHE BOOL  "")
+FetchContent_MakeAvailable(glfw)
+FetchContent_Declare(
+    fetch_vk_bootstrap
+    GIT_REPOSITORY https://github.com/charles-lunarg/vk-bootstrap
+    GIT_TAG        v1.4.307 #suggest using a tag so the library doesn't update whenever new commits are pushed to a branch
+)
+FetchContent_MakeAvailable(fetch_vk_bootstrap)
 
-#================================#
-# IDE specific setup              #
-#================================#
-if(CMAKE_GENERATOR MATCHES "Visual Studio")
-    set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-elseif(CMAKE_GENERATOR MATCHES "Xcode")
-    set(CMAKE_XCODE_GENERATE_SCHEME ON)
-    set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_GENERATE_SCHEME ON)
-    set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_SCHEME_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY XCODE_STARTUP_PROJECT ${PROJECT_NAME})
+add_executable(JBRenderer "src/main.cpp")
+target_link_libraries(JBRenderer
+    PRIVATE
+        Vulkan::Vulkan
+        glfw
+        vk-bootstrap
+        vk-bootstrap-compiler-warnings)
+
+# If you're on macOS, you might also need to explicitly link MoltenVK
+if(APPLE)
+    # You might need to adjust this path based on your Vulkan SDK installation
+    target_link_libraries(JBRenderer 
+        PRIVATE 
+        "/usr/local/lib/libMoltenVK.dylib"
+    )
 endif()
+
+target_include_directories(JBRenderer PRIVATE ${CMAKE_CURRENT_BINARY_DIR}) # path to build directory for shaders
+
+find_program(GLSLANG_FOUND glslang)
+if(GLSLANG_FOUND)
+    message(STATUS "glslang found, will compile shaders automatically")
+
+    set(COMPILED_SHADER_FILES)
+    macro(compile_shader SHADER_NAME)
+        set(SHADER_SOURCE ${CMAKE_SOURCE_DIR}/src/shaders/${SHADER_NAME})
+        set(SHADER_SPIRV_NAME ${SHADER_NAME}.spv)
+        set(SHADER_SPIRV_PATH ${CMAKE_SOURCE_DIR}/src/shaders/${SHADER_SPIRV_NAME})
+        set(SHADER_DEST_SPIRV ${CMAKE_BINARY_DIR}/${SHADER_SPIRV_NAME})
+
+        add_custom_command(
+            OUTPUT ${SHADER_SPIRV_PATH}
+            COMMAND glslang -V ${SHADER_SOURCE} -o ${SHADER_SPIRV_PATH} --target-env vulkan1.0
+            DEPENDS ${SHADER_SOURCE}
+            COMMENT "Shader ${SHADER_NAME} compiled"
+        )
+
+        add_custom_command(
+            OUTPUT ${SHADER_DEST_SPIRV}
+            COMMAND ${CMAKE_COMMAND} -E copy ${SHADER_SPIRV_PATH} ${SHADER_DEST_SPIRV}
+            DEPENDS ${SHADER_SPIRV_PATH}
+        )
+        list(APPEND COMPILED_SHADER_FILES ${SHADER_DEST_SPIRV})
+    endmacro()
+
+    compile_shader(triangle.frag)
+    compile_shader(triangle.vert)
+    #compile_shader(simple_compute.comp)
+    add_custom_target(generate_shaders DEPENDS ${COMPILED_SHADER_FILES})
+    add_dependencies(JBRenderer generate_shaders)
+else()
+    message(STATUS "glslang not found! Will need to add it.")
+endif()
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/src/example_config.h.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/example_config.h"
+)
