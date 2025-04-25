@@ -2,30 +2,21 @@
 
 struct GLFWwindow;
 
-class Window
-{
+class Window {
 public:
-	Window();
-	~Window();
+    Window(int width, int height, const std::string& title, bool resizable = true);
+    ~Window();
 
-	void Init(int width, int height);
-
-	// static Vector2i GetDisplaySize();
-
-	bool PollMessages();
-
-	void SetTitle(const char* pTitle);
-
-	GLFWwindow* GetNativeWindow() const { return m_Window; }
-	// Vector2i GetRect() const { return Vector2i(m_DisplayWidth, m_DisplayHeight); }
+    GLFWwindow* GetHandle() const { return m_Window; }
+    bool ShouldClose() const;
+    void PollEvents() const;
+    
+    int GetWidth() const { return m_Width; }
+    int GetHeight() const { return m_Height; }
 
 private:
-
-private:
-    GLFWwindow* m_Window = nullptr;
-	bool m_Minimized = false;
-	bool m_Maximized = false;
-	int m_DisplayWidth = 0;
-	int m_DisplayHeight = 0;
-	bool m_IsResizing = false;
+    GLFWwindow* m_Window;
+    int m_Width;
+    int m_Height;
+    std::string m_Title;
 };

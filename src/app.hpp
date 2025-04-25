@@ -2,24 +2,14 @@
 #include "core/window.hpp"
 #include "renderer/renderer.hpp"
 
-class App
-{
+class App {
 public:
-	int Run();
+    App();
+    ~App();
 
-protected:
-	void Init();
-    void Update();
-    void Shutdown();
-
-protected:
-    // RendererDevice m_pDevice;
-	Window m_Window;
-    Renderer m_Renderer;
+    int Run();
 
 private:
-	void Init_Internal();
-	void Update_Internal();
-	void Shutdown_Internal();
-	void OnWindowResizeOrMove(int width, int height);
+    Window m_Window;
+    Renderer m_Renderer;
 };

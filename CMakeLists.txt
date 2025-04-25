@@ -28,7 +28,16 @@ add_executable(JBRenderer
     "src/stdafx.cpp" 
     "src/core/window.cpp" 
     "src/app.cpp"
-    "src/renderer/renderer.cpp")
+
+    "src/renderer/command_manager.cpp"
+    "src/renderer/framebuffer.cpp"
+    "src/renderer/pipeline.cpp"
+    "src/renderer/render_pass.cpp"
+    "src/renderer/renderer.cpp"
+    "src/renderer/shader_module.cpp"
+    "src/renderer/swap_chain.cpp"
+    "src/renderer/synchronization.cpp"
+    "src/renderer/vulkan_context.cpp")
 target_link_libraries(JBRenderer
     PRIVATE
         Vulkan::Vulkan

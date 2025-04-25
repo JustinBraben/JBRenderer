@@ -2,49 +2,33 @@
 
 #include "../stdafx.h"
 
-struct RendererDevice {
-    vkb::Instance instance;
-    vkb::InstanceDispatchTable inst_disp;
-    VkSurfaceKHR surface;
-    vkb::Device device;
-    vkb::DispatchTable disp;
-    vkb::Swapchain swapchain;
-};
+#pragma once
+#include "vulkan_context.hpp"
+#include "swap_chain.hpp"
+#include "render_pass.hpp"
+#include "shader_module.hpp"
+#include "pipeline.hpp"
+#include "framebuffer.hpp"
+#include "command_manager.hpp"
+#include "synchronization.hpp"
 
-struct RendererData {
-    VkQueue graphics_queue;
-    VkQueue present_queue;
-
-    std::vector<VkImage> swapchain_images;
-    std::vector<VkImageView> swapchain_image_views;
-    std::vector<VkFramebuffer> framebuffers;
-
-    VkRenderPass render_pass;
-    VkPipelineLayout pipeline_layout;
-    VkPipeline graphics_pipeline;
-
-    VkCommandPool command_pool;
-    std::vector<VkCommandBuffer> command_buffers;
-
-    std::vector<VkSemaphore> available_semaphores;
-    std::vector<VkSemaphore> finished_semaphore;
-    std::vector<VkFence> in_flight_fences;
-    std::vector<VkFence> image_in_flight;
-    size_t current_frame = 0;
-};
-
-class Renderer
-{
+class Renderer {
 public:
-	Renderer();
-	~Renderer();
+    Renderer(Window& window);
+    ~Renderer();
 
-	void Init(GLFWwindow* window);
-
-private:
-    // void InitDevice(RendererDevice& render_device);
+    void DrawFrame();
+    void WaitIdle();
 
 private:
-    // RendererDevice* m_pDevice = nullptr;
-    int	m_Frame	= 0;
+    Window& m_Window;
+    VulkanContext m_Context;
+    SwapChain m_Swapchain;
+    RenderPass m_RenderPass;
+    Pipeline m_Pipeline;
+    Framebuffer m_Framebuffers;
+    CommandManager m_CommandManager;
+    Synchronization m_Synchronization;
+
+    int RecreateSwapchain();
 };
