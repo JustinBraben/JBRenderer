@@ -96,6 +96,7 @@ void Renderer::DrawFrame() {
     
     disp.resetFences(1, &inFlightFences[currentFrame]);
     
+    // Submit to the graphics queue passing a wait fence
     if (disp.queueSubmit(m_Context.GetGraphicsQueue(), 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("Failed to submit draw command buffer");
     }
@@ -118,5 +119,6 @@ void Renderer::DrawFrame() {
         throw std::runtime_error("Failed to present swapchain image");
     }
     
+    // Select the next frame to render to, based on the max. no. of concurrent frames
     m_Synchronization.NextFrame();
 }

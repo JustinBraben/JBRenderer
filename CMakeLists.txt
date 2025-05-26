@@ -22,16 +22,16 @@ FetchContent_Declare(
     GIT_TAG        v1.4.307 #suggest using a tag so the library doesn't update whenever new commits are pushed to a branch
 )
 FetchContent_MakeAvailable(fetch_vk_bootstrap)
-# FetchContent_Declare(ImGui
-#     GIT_REPOSITORY https://github.com/ocornut/imgui
-#     GIT_TAG v1.91.1
-#     GIT_SHALLOW ON
-#     EXCLUDE_FROM_ALL
-#     SYSTEM)
-# FetchContent_MakeAvailable(ImGui)
-# FetchContent_GetProperties(ImGui SOURCE_DIR IMGUI_DIR)
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG 1.0.1
+)
+FetchContent_MakeAvailable(glm)
 FetchContent_Declare(imgui_external
-	URL https://github.com/ocornut/imgui/archive/refs/tags/v1.91.9.tar.gz
+    GIT_REPOSITORY https://github.com/ocornut/imgui
+    GIT_TAG v1.91.1
+    GIT_SHALLOW ON
 	EXCLUDE_FROM_ALL
 )
 FetchContent_MakeAvailable(imgui_external)
@@ -60,7 +60,7 @@ add_executable(JBRenderer
     "src/renderer/shader_module.cpp"
     "src/renderer/swap_chain.cpp"
     "src/renderer/synchronization.cpp"
-    "src/renderer/vulkan_context.cpp")
+    "src/renderer/vulkan_context.cpp" "src/scene/camera.cpp")
 
 target_link_libraries(JBRenderer
     PRIVATE
@@ -68,7 +68,8 @@ target_link_libraries(JBRenderer
         Vulkan::Vulkan
         imgui
         vk-bootstrap
-        vk-bootstrap-compiler-warnings)
+        vk-bootstrap-compiler-warnings
+        glm::glm)
 
 # If you're on macOS, you might also need to explicitly link MoltenVK
 if(APPLE)
